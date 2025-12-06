@@ -44,6 +44,23 @@ app.get('/api/test', (req, res) => {
 });
 
 const Student = require('./model/Student');
+
+// API lấy thông tin chi tiết một học sinh (ĐẶT TRƯỚC route tổng quát)
+app.get('/api/students/:id', async (req, res) => {
+    try {
+        console.log("Đang lấy thông tin student với ID:", req.params.id);
+        const student = await Student.findById(req.params.id);
+        if (!student) {
+            return res.status(404).json({ error: "Student not found" });
+        }
+        res.json(student);
+    } catch (error) {
+        console.error("Lỗi khi lấy thông tin sinh viên: ", error);
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// API lấy danh sách tất cả học sinh
 app.get('/api/students', async (req, res) => {
     try{
         const students = await Student.find();
@@ -64,5 +81,40 @@ app.post('/api/students', async (req, res) => {
         res.status(400).json({ message: "Đã xảy ra lỗi" });
     }
 
+});
+
+// API cập nhật học sinh (HTTP PUT)
+app.put('/api/students/:id', async (req, res) => {
+    try {
+        console.log("Đang cập nhật student với ID:", req.params.id);
+        const updatedStu = await Student.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+        if (!updatedStu) {
+            return res.status(404).json({ error: "Student not found" });
+        }
+        res.json(updatedStu);
+    } catch (err) {
+        console.error("Lỗi khi cập nhật sinh viên: ", err);
+        res.status(400).json({ error: err.message });
+    }
+});
+
+// API xóa học sinh (HTTP DELETE)
+app.delete('/api/students/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        console.log("Đang xóa student với ID:", id);
+        const deleted = await Student.findByIdAndDelete(id);
+        if (!deleted) {
+            return res.status(404).json({ error: "Student not found" });
+        }
+        res.json({ message: "Đã xóa học sinh", id: deleted._id, name: deleted.name });
+    } catch (err) {
+        console.error("Lỗi khi xóa sinh viên: ", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
